@@ -1,11 +1,13 @@
-const swiffyslider = function() {
+const swiffyslider = function () {
     return {
         version: "1.6.0",
         init(rootElement = document.body) {
             rootElement.querySelectorAll(".swiffy-slider").forEach(sliderElement => this.initSlider(sliderElement));
         },
-
+        
         initSlider(sliderElement) {
+            this.adjustForParentPadding(sliderElement); // Adjust for parent padding dynamically
+
             sliderElement.querySelectorAll(".slider-nav").forEach(navElement =>
                 navElement.addEventListener("click", () => this.slide(sliderElement, navElement.classList.contains("slider-nav-next")), { passive: true })
             );
@@ -21,6 +23,23 @@ const swiffyslider = function() {
                 const threshold = sliderElement.getAttribute("data-slider-nav-animation-threshold") ? sliderElement.getAttribute("data-slider-nav-animation-threshold") : 0.3;
                 this.setVisibleSlides(sliderElement, threshold);
             }
+        },
+
+        adjustForParentPadding(sliderElement) {
+            const sliderContainer = sliderElement.querySelector(".slider-container");
+            if (!sliderContainer) {
+                return;
+            }
+            let totalPadding = 0;
+            let currentElement = sliderContainer.parentElement;
+            while (currentElement) {
+                const styles = getComputedStyle(currentElement);
+                const paddingLeft = parseFloat(styles.paddingLeft) || 0;
+                const paddingRight = parseFloat(styles.paddingRight) || 0;
+                totalPadding += paddingLeft + paddingRight;
+                currentElement = currentElement.parentElement;
+            }
+            sliderContainer.style.setProperty("--swiffy-slider-item-reveal", `${totalPadding}px`);
         },
 
         setVisibleSlides(sliderElement, threshold = 0.3) {
